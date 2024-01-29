@@ -11,6 +11,7 @@ function MyQRCodesContent() {
   const [dropdown2Visible, setDropdown2Visible] = useState(false);
   const [dropdown3Visible, setDropdown3Visible] = useState(false);
   const [dropdown4Visible, setDropdown4Visible] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const [qrCodes, setQRCodes] = useState([]);
   const [dropdownVisibility, setDropdownVisibility] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -264,7 +265,7 @@ function MyQRCodesContent() {
           </div>
         </div>
         <div className={MyQR.headDiv2}>
-          <input type="text" id={MyQR.searchBox} placeholder="Search..." />
+            <input type="text" id={MyQR.searchBox} placeholder="Search..." value={searchQuery}  onChange={(e) => setSearchQuery(e.target.value)}/>
         </div>
         <div className={MyQR.belowDiv}>
 
@@ -273,7 +274,9 @@ function MyQRCodesContent() {
 
 
           
-            {qrCodes.map((code, index) => (
+            {qrCodes.filter((code) =>
+    code.Link.toLowerCase().includes(searchQuery.toLowerCase())
+  ).map((code, index) => (
               <li key={index}>
                 <div className={MyQR.qrCodeContainer}>
                   <div className={MyQR.checkboxContainer}>
