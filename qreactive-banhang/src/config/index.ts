@@ -25,7 +25,7 @@ export const PRODUCT_CATEGORIES = [
 export const NAV_LINKS = [
   { href: '/', key: 'home', label: 'Home' },
   { href: '/whyqr', key: 'why_qreactive', label: 'Why Qreactive?' },
-  { href: '/qr_scanner', key: 'qr_scanner', label: 'Qr Scanner' },
+  { href: '/qr_scanner', key: 'qr_scanner', label: 'Create Qr Code' },
   { href: '/faq', key: 'faq ', label: 'FAQ ' },
 ];
 
