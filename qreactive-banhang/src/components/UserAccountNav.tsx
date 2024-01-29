@@ -58,7 +58,7 @@ const UserAccountNav = ({ user }: { user: User }) => {
         </DropdownMenuItem>
 
         <DropdownMenuItem asChild >
-          <Link href={`qr_list`} className='cursor-pointer'>
+          <Link href={`/qr_list`} className='cursor-pointer'>
           QR List
           </Link>
          
