@@ -151,7 +151,8 @@
   color: var(--color-white);
 }
 .footer {
-  width: 1440px;
+  justify-content: center;
+  width: 100%;
   background-color: #081a51;
   align-items: center;
   padding: var(--padding-11xl) 75px 110px;
