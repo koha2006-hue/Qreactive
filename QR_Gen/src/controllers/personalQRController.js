@@ -44,7 +44,7 @@ const generatePersonalQR = async (req, res) => {
                 
             });
             personalQRData.account = currentAccount;
-            const profileUrl = `http://localhost:5000/personalQR/profile/${personalQRData._id}`;
+            const profileUrl = `http://localhost:5000/personalQR/scan/${personalQRData._id}`;
             const qrCodeDataUrl = await qr.toDataURL(profileUrl);
             personalQRData.QRcode = qrCodeDataUrl;
             personalQRData.Link = profileUrl;
@@ -101,19 +101,17 @@ const scanPersonalQR = async (req, res) => {
     try {
         // Retrieve the saved data from the database using the provided ID
         const personalQRData = await personalQR.findById(req.params.id);
-
+        
         if (!personalQRData) {
             return res.status(404).send('QR Data not found');
         }
 
-        // Construct the URL for the profile using the provided ID
-        const profileUrl = `http://localhost:5000/personalQR/profile/${req.params.id}`;
+        // Generate the QR code data
+        const data = personalQRData;
 
-        // Generate the QR code data for the profile URL
-        const qrCodeDataUrl = await qr.toDataURL(profileUrl);
+        // Render the profile page with the QR code data
+        res.render('profile', { name: data.name, email: data.email, phone: data.phone, address: data.address, website: data.website, company: data.company, position: data.position, qrCodeDataUrl: data.QRcode, link: data.Link });
 
-        // Render the scan page with the QR code data and document ID
-        res.render('scan', { qrCodeDataUrl, id: req.params.id });
     } catch (err) {
         console.error(err);
         res.status(500).send('Internal Server Error');
@@ -132,8 +130,9 @@ const showProfile = async (req, res) => {
         // Generate the QR code data
         const data = personalQRData;
 
-       // Render the scan page with the QR code data and document ID
-        res.render('scan', { qrCodeDataUrl, id: req.params.id });
+        //send the data to client side
+        res.json(data);
+
 
     } catch (err) {
         console.error(err);
