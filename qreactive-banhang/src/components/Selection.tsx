@@ -8,7 +8,7 @@ const Selection = () => {
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap" />
     <div className={home.buttonContainer}>
       <Link href='/qr_link'><button className={home.button}><img src='Link.svg'></img><span>Link/URL</span></button></Link>
-      <Link href='/'><button className={home.button}><img src='PDF.svg'></img><span>Custom</span></button></Link>
+      <Link href='/personalData'><button className={home.button}><img src='PDF.svg'></img><span>Custom</span></button></Link>
       <Link href='/qr_text'><button className={home.button}><img src='Text.svg'></img><span>Text</span></button></Link>
       
       

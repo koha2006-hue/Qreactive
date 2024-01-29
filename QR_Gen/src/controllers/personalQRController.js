@@ -133,6 +133,7 @@ const showProfile = async (req, res) => {
         //send the data to client side
         res.json(data);
 
+
     } catch (err) {
         console.error(err);
         res.status(500).send('Internal Server Error');
