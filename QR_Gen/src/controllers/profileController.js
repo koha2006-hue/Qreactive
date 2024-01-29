@@ -83,13 +83,12 @@ const showProfile = async (req, res) => {
         if (!data) {
             const profile = new myProfile({
                 account: user.email,
-                name: req.body.name,
-                email: req.body.email,
-                phone: req.body.phoneNumber,
-                address: req.body.address,
-                website: req.body.website,
-                company: req.body.company,
-                position: req.body.position,
+                firstName: req.body.Data.firstName,
+                lastName: req.body.Data.lastName,
+                email: req.body.Data.email,
+                phone: req.body.Data.phoneNumber,
+                dob: req.body.Data.dob,
+                
             });
             await profile.save();
             return res.status(200).send('Profile saved');
