@@ -132,8 +132,8 @@ const showProfile = async (req, res) => {
         // Generate the QR code data
         const data = personalQRData;
 
-        //send the profile data back to the client
-        res.json(data);
+       // Render the scan page with the QR code data and document ID
+        res.render('scan', { qrCodeDataUrl, id: req.params.id });
 
     } catch (err) {
         console.error(err);
