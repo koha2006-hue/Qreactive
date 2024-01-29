@@ -5,6 +5,8 @@ import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import MyQR from "./MyQRCodes.module.css";
 import { getEmailUser } from '@/components/emailuser';
+import html2canvas from 'html2canvas'; 
+
 function MyQRCodesContent() {
   // State to manage dropdown visibility
   const [dropdown1Visible, setDropdown1Visible] = useState(false);
@@ -12,6 +14,8 @@ function MyQRCodesContent() {
   const [dropdown3Visible, setDropdown3Visible] = useState(false);
   const [dropdown4Visible, setDropdown4Visible] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedFilter, setSelectedFilter] = useState(null);
+  const [selectedCodes, setSelectedCodes] = useState([]);
   const [qrCodes, setQRCodes] = useState([]);
   const [dropdownVisibility, setDropdownVisibility] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -174,7 +178,84 @@ function MyQRCodesContent() {
       console.error(`Error editing QR code with id ${id}:`, error);
     }
   }
+  const handleFilter = (filter) => {
+    setSelectedFilter(filter);
+    toggleDropdown("1"); // Close the dropdown after selecting a filter
+  };
+  const handleCheckboxChange = (id) => {
+    setSelectedCodes((prevSelected) => {
+      if (prevSelected.includes(id)) {
+        return prevSelected.filter((selectedId) => selectedId !== id);
+      } else {
+        return [...prevSelected, id];
+      }
+    });
+  };
+  const handleCopySelected = () => {
+    if (selectedCodes.length === 0) {
+      console.warn("No QR codes selected for copying.");
+      return;
+    }
+  
+    // Get the data of selected QR codes based on their IDs
+    const selectedQRCodeData = qrCodes.filter((code) =>
+      selectedCodes.includes(code._id)
+    );
+  
+    // Implement your logic to copy the data or perform the desired action
+    // For example, you can copy the links of selected QR codes to the clipboard
+    const selectedLinks = selectedQRCodeData.map((code) => code.Link).join("\n");
+  
+    // Copy to the clipboard (you may need to adjust this based on your requirements)
+    navigator.clipboard.writeText(selectedLinks).then(() => {
+      console.log("Selected QR codes copied to clipboard:", selectedCodes);
+      // Optionally, you can clear the selectedCodes state if needed
+      setSelectedCodes([]);
+    }).catch((error) => {
+      console.error("Error copying selected QR codes:", error);
+    });
+  };
+  const handleSort = (sortType) => {
+    // Implement sorting logic based on sortType (e.g., "newFirst", "oldFirst")
+    let sortedQRCodes;
 
+    switch (sortType) {
+      case "newFirst":
+        sortedQRCodes = [...qrCodes].sort((a, b) => new Date(b.generatedAt) - new Date(a.generatedAt));
+        break;
+      case "oldFirst":
+        sortedQRCodes = [...qrCodes].sort((a, b) => new Date(a.generatedAt) - new Date(b.generatedAt));
+        break;
+      default:
+        // Handle other sorting options if needed
+        sortedQRCodes = qrCodes;
+        break;
+    }
+
+    setQRCodes(sortedQRCodes);
+  };
+
+  const handleDownloadPNG = async (id) => {
+    try {
+      const qrCodeContainer = document.getElementById(`qrCodeContainer_${id}`);
+
+      if (!qrCodeContainer) {
+        console.error(`QR code container with id ${id} not found.`);
+        return;
+      }
+
+      const canvas = await html2canvas(qrCodeContainer);
+      const dataUrl = canvas.toDataURL('image/png');
+
+      // Create a temporary anchor element to trigger the download
+      const downloadLink = document.createElement('a');
+      downloadLink.href = dataUrl;
+      downloadLink.download = `QRCode_${id}.png`;
+      downloadLink.click();
+    } catch (error) {
+      console.error('Error downloading PNG:', error);
+    }
+  };
   return (
     <div>
       <div className={MyQR.container}>
@@ -204,7 +285,12 @@ function MyQRCodesContent() {
       <div className={MyQR.bigContainer}>
         <div className={MyQR.headDiv1}>
           <button className={MyQR.selectAllBtn}>Select All</button>
-          <button className={MyQR.copyBtn} id={MyQR.copyButton}></button>
+          <button
+            className={MyQR.copyBtn}
+            id={MyQR.copyButton}
+            onClick={handleCopySelected}
+          >
+          </button>
           <button className={MyQR.deleteBtn} id={MyQR.deleteButton}></button>
           <div className={MyQR.dropdown} id={MyQR.filterButton}>
             <button
@@ -223,13 +309,13 @@ function MyQRCodesContent() {
                 dropdown1Visible ? MyQR.show : ""
               }`}
             >
-              <a href="#" onClick={() => toggleDropdown("1")}>
+               <a href="#" onClick={() => handleFilter("link")}>
                 Link
               </a>
-              <a href="#" onClick={() => toggleDropdown("1")}>
+              <a href="#" onClick={() => handleFilter("personal")}>
                 Vcard
               </a>
-              <a href="#" onClick={() => toggleDropdown("1")}>
+              <a href="#" onClick={() => handleFilter("text")}>
                 Text
               </a>
             </div>
@@ -252,20 +338,17 @@ function MyQRCodesContent() {
                 dropdown2Visible ? MyQR.show : ""
               }`}
             >
-              <a href="#" onClick={() => toggleDropdown("2")}>
+              <a href="#" onClick={() => handleSort("newFirst")}>
                 New First
               </a>
-              <a href="#" onClick={() => toggleDropdown("2")}>
+              <a href="#" onClick={() => handleSort("oldFirst")}>
                 Old First
-              </a>
-              <a href="#" onClick={() => toggleDropdown("2")}>
-                By Popularity
               </a>
             </div>
           </div>
         </div>
         <div className={MyQR.headDiv2}>
-            <input type="text" id={MyQR.searchBox} placeholder="Search..." value={searchQuery}  onChange={(e) => setSearchQuery(e.target.value)}/>
+          <input type="text" id={MyQR.searchBox} placeholder="Search..." value={searchQuery}  onChange={(e) => setSearchQuery(e.target.value)}/>
         </div>
         <div className={MyQR.belowDiv}>
 
@@ -274,16 +357,27 @@ function MyQRCodesContent() {
 
 
           
-            {qrCodes.filter((code) =>
-    code.Link.toLowerCase().includes(searchQuery.toLowerCase())
-  ).map((code, index) => (
+                    {qrCodes
+              .filter((code) =>
+                code.Link.toLowerCase().includes(searchQuery.toLowerCase())
+              )
+              .filter((code) => !selectedFilter || code.type === selectedFilter)
+              .map((code, index) => (
               <li key={index}>
-                <div className={MyQR.qrCodeContainer}>
+                <div className={MyQR.qrCodeContainer} id={`qrCodeContainer_${code._id}`}>
                   <div className={MyQR.checkboxContainer}>
                       {/* Checkbox */}
-                      <input type="checkbox" id={MyQR.checkbox} />
+                      <input
+                        type="checkbox"
+                        id={MyQR.checkbox + index}
+                        checked={selectedCodes.includes(code._id)}
+                        onChange={() => handleCheckboxChange(code._id)}
+                      />
                       {/* Text next to the checkbox */}
-                      <label htmlFor={MyQR.checkbox} className={MyQR.checkboxLabel}>
+                      <label
+                          htmlFor={MyQR.checkbox + index}
+                          className={MyQR.checkboxLabel}
+                        >
                         Include in Selection
                       </label>
                   </div>
@@ -309,10 +403,13 @@ function MyQRCodesContent() {
                           >
                             {/* Dropdown content */}
                             <a
-                              href="#"
-                              style={{ display: 'flex', alignItems: 'center' }}
-                              onClick={(e) => e.preventDefault()} // Prevent default behavior of anchor tag
-                            >
+                            href="#"
+                        style={{ display: 'flex', alignItems: 'center' }}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleDownloadPNG(code._id);
+                        }}
+                      >
                             PNG
                             <img
                               src="qrdowload.png"
